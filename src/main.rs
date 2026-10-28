@@ -5,13 +5,15 @@ use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::{Json, Router, extract::State, routing::get};
 use serde::{Deserialize, Serialize};
-use axum::http::HeaderValue;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::{AllowOrigin, Any, CorsLayer};
 
 
 const PATH:&str = "scores.csv";
 const ADDR:&str = "127.0.0.1:3030";
-const ALLOW_ADDR:&str = "https://race.iwaservice.uk";
+const ALLOWED: &[&str] = &[
+    "https://race.iwaservice.uk",
+    "https://race.iwa.me.uk",
+];
 const NAME:[&str;2] = ["easy","hard"];
 
 
@@ -46,7 +48,10 @@ async fn main() {
     let db:Mode = Mode {easy:Arc::new(Mutex::new(load(NAME[0]))),hard:Arc::new(Mutex::new(load(NAME[1])))};
 
     let cors =  CorsLayer::new()
-    .allow_origin(ALLOW_ADDR.parse::<HeaderValue>().unwrap())
+    .allow_origin(AllowOrigin::predicate(|origin, _| {
+        ALLOWED.iter().any(|a| origin.as_bytes() == a.as_bytes())
+            || origin.as_bytes().starts_with(b"http://localhost:")
+    }))
     .allow_methods(Any)
     .allow_headers(Any);
 
