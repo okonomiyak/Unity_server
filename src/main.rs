@@ -5,10 +5,15 @@ use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::{Json, Router, extract::State, routing::get};
 use serde::{Deserialize, Serialize};
+use axum::http::HeaderValue;
+use tower_http::cors::{Any, CorsLayer};
+
 
 const PATH:&str = "scores.csv";
 const ADDR:&str = "127.0.0.1:3030";
+const ALLOW_ADDR:&str = "https://race.iwaservice.uk";
 const NAME:[&str;2] = ["easy","hard"];
+
 
 #[derive(Clone, Deserialize, Serialize)]
 struct Score{
@@ -40,9 +45,15 @@ type Db = Arc<Mutex<Vec<Score>>>;
 async fn main() {
     let db:Mode = Mode {easy:Arc::new(Mutex::new(load(NAME[0]))),hard:Arc::new(Mutex::new(load(NAME[1])))};
 
+    let cors =  CorsLayer::new()
+    .allow_origin(ALLOW_ADDR.parse::<HeaderValue>().unwrap())
+    .allow_methods(Any)
+    .allow_headers(Any);
+
     let app = Router::new()
         .route("/scores/{mode}", get(list).post(add))
-        .with_state(db);
+        .with_state(db)
+        .layer(cors);
     let listener = tokio::net::TcpListener::bind(ADDR)
         .await
         .unwrap();
