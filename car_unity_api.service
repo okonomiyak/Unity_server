@@ -1,0 +1,15 @@
+[Unit]
+Description=car_unity_api
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/Unity_server
+ExecStart=/opt/Unity_server/target/release/Unity_server
+Restart=always
+RestartSec=3
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target
