@@ -7,7 +7,7 @@ use axum::{Json, Router, extract::State, routing::get};
 use serde::{Deserialize, Serialize};
 
 const PATH:&str = "scores.csv";
-
+const ADDR:&str = "127.0.0.1:3030";
 const NAME:[&str;2] = ["easy","hard"];
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -43,7 +43,7 @@ async fn main() {
     let app = Router::new()
         .route("/scores/{mode}", get(list).post(add))
         .with_state(db);
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3030")
+    let listener = tokio::net::TcpListener::bind(ADDR)
         .await
         .unwrap();
 
