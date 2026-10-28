@@ -1,2 +1,3 @@
+cargo build --release
 systemctl restart car_unity_api
 systemctl status car_unity_api
